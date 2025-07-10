@@ -183,5 +183,43 @@ EOF
     # Confirm
     echo "✅ All folders and files created inside $parent/"
 }
+
+install_docker_if_missing() {
+    # Check if Docker is installed
+    if command -v docker &> /dev/null; then
+        echo "✅ Docker is already installed."
+        return
+    fi
+
+    echo "🔍 Docker is not installed."
+
+    # Check if snap is installed
+    if ! command -v snap &> /dev/null; then
+        echo "⚠️ Snap is not installed. Installing snap..."
+        sudo apt update
+        sudo apt install -y snapd
+
+        # Enable snap service if needed (mostly for older distros)
+        sudo systemctl enable --now snapd.socket
+    fi
+
+    # Confirm snap is available now
+    if ! command -v snap &> /dev/null; then
+        echo "❌ Snap installation failed. Cannot proceed."
+        return 1
+    fi
+
+    echo "📦 Installing Docker using snap..."
+    sudo snap install docker
+
+    # Verify Docker installation
+    if command -v docker &> /dev/null; then
+        echo "✅ Docker installed successfully."
+    else
+        echo "❌ Docker installation failed."
+    fi
+}
+
+install_docker_if_missing
 create_folder_and_files
 write_inside_files
